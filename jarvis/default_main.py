@@ -241,54 +241,31 @@ HTML = r"""
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0a0c10" />
+  <meta name="theme-color" content="#0a0e10" />
   <title>Jarvis</title>
   <style>
     :root {
       color-scheme: dark;
-      --bg: #090b0f;
-      --surface: rgba(20, 23, 30, .82);
-      --surface-solid: #151820;
-      --surface-raised: #1b1f29;
-      --surface-hover: #232834;
-      --text: #f7f8fb;
-      --muted: #939baa;
-      --muted-strong: #b8bfcb;
-      --border: rgba(255, 255, 255, .09);
-      --border-strong: rgba(255, 255, 255, .16);
-      --accent: #6ee7d8;
-      --accent-strong: #34d3c0;
-      --accent-soft: rgba(77, 221, 204, .12);
-      --accent-text: #061613;
-      --user: linear-gradient(135deg, #245e73, #274a76);
+      --bg: #0a0e10;
+      --surface: #101619;
+      --surface-solid: #12181c;
+      --surface-raised: #182126;
+      --surface-hover: #1d2a2f;
+      --text: #eef5f4;
+      --muted: #879592;
+      --muted-strong: #bcc8c5;
+      --border: #253135;
+      --border-strong: #334247;
+      --accent: #54d6c4;
+      --accent-strong: #36bdaa;
+      --accent-soft: #142c2a;
+      --accent-text: #07110f;
+      --user: #16443e;
       --good: #62d795;
-      --warn: #f4c76b;
-      --bad: #ff7c87;
+      --warn: #e7b957;
+      --bad: #f17883;
       --shadow: 0 24px 80px rgba(0, 0, 0, .38);
       --radius: 22px;
-    }
-
-    [data-theme="light"] {
-      color-scheme: light;
-      --bg: #eef1f5;
-      --surface: rgba(255, 255, 255, .84);
-      --surface-solid: #ffffff;
-      --surface-raised: #f4f6f9;
-      --surface-hover: #e9edf3;
-      --text: #18202a;
-      --muted: #687383;
-      --muted-strong: #4d5968;
-      --border: rgba(20, 30, 45, .10);
-      --border-strong: rgba(20, 30, 45, .18);
-      --accent: #0da896;
-      --accent-strong: #078b7d;
-      --accent-soft: rgba(13, 168, 150, .10);
-      --accent-text: #ffffff;
-      --user: linear-gradient(135deg, #1f7891, #3468a5);
-      --good: #168651;
-      --warn: #a06400;
-      --bad: #d43d4c;
-      --shadow: 0 22px 60px rgba(35, 48, 66, .15);
     }
 
     * { box-sizing: border-box; }
@@ -297,10 +274,7 @@ HTML = r"""
       margin: 0;
       overflow: hidden;
       font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 16% -10%, rgba(56, 189, 248, .12), transparent 30%),
-        radial-gradient(circle at 88% 12%, rgba(110, 231, 216, .10), transparent 28%),
-        var(--bg);
+      background: var(--bg);
       color: var(--text);
       -webkit-font-smoothing: antialiased;
     }
@@ -317,6 +291,8 @@ HTML = r"""
       height: 100dvh;
       min-height: 520px;
       margin: 0 auto;
+      position: relative;
+      isolation: isolate;
       padding: max(16px, env(safe-area-inset-top)) 18px max(16px, env(safe-area-inset-bottom));
       display: grid;
       grid-template-rows: auto auto minmax(0, 1fr);
@@ -338,10 +314,10 @@ HTML = r"""
       flex: 0 0 auto;
       display: grid;
       place-items: center;
-      border: 1px solid rgba(110, 231, 216, .32);
+      border: 1px solid #2a655e;
       border-radius: 14px;
-      background: linear-gradient(145deg, rgba(110, 231, 216, .20), rgba(56, 189, 248, .08));
-      box-shadow: inset 0 1px rgba(255, 255, 255, .1), 0 10px 30px rgba(30, 190, 176, .09);
+      background: var(--accent-soft);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, .18);
       color: var(--accent);
       font-size: 18px;
       font-weight: 800;
@@ -357,7 +333,6 @@ HTML = r"""
       border-radius: 12px;
       background: var(--surface);
       color: var(--muted-strong);
-      backdrop-filter: blur(18px);
     }
     .status-pill {
       display: inline-flex;
@@ -368,14 +343,15 @@ HTML = r"""
     }
     .status-pill:hover, .icon-btn:hover, .action-btn:hover { background: var(--surface-hover); border-color: var(--border-strong); }
     .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); box-shadow: 0 0 0 4px rgba(147, 155, 170, .09); }
-    .status-pill.ok .status-dot { background: var(--good); box-shadow: 0 0 0 4px color-mix(in srgb, var(--good) 12%, transparent); }
-    .status-pill.warn .status-dot { background: var(--warn); box-shadow: 0 0 0 4px color-mix(in srgb, var(--warn) 12%, transparent); }
-    .status-pill.bad .status-dot { background: var(--bad); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bad) 12%, transparent); }
+    .status-pill.ok .status-dot { background: var(--good); box-shadow: 0 0 0 4px rgba(98, 215, 149, .12); }
+    .status-pill.warn .status-dot { background: var(--warn); box-shadow: 0 0 0 4px rgba(231, 185, 87, .12); }
+    .status-pill.bad .status-dot { background: var(--bad); box-shadow: 0 0 0 4px rgba(241, 120, 131, .12); }
     .status-text { font-size: 12px; font-weight: 700; }
     .icon-btn { width: 38px; padding: 0; display: grid; place-items: center; cursor: pointer; font-size: 16px; }
 
     .toolbar {
       position: relative;
+      z-index: 20;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -385,7 +361,6 @@ HTML = r"""
       border-radius: 16px;
       background: var(--surface);
       box-shadow: 0 12px 44px rgba(0, 0, 0, .12);
-      backdrop-filter: blur(18px);
     }
     .tool-group { display: flex; align-items: center; gap: 6px; min-width: 0; }
     .action-btn {
@@ -401,12 +376,15 @@ HTML = r"""
     .action-btn:disabled { cursor: wait; opacity: .65; }
     .action-symbol { color: var(--accent); font-size: 15px; line-height: 1; }
     .count-badge { min-width: 19px; padding: 2px 6px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font-size: 10px; text-align: center; }
-    .model-summary { min-width: 0; padding: 0 8px; color: var(--muted); font-size: 11px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .model-summary strong { color: var(--muted-strong); font-weight: 700; }
+    .model-selector-btn { min-width: 220px; justify-content: flex-start; padding: 5px 10px; }
+    .model-button-copy { min-width: 0; display: grid; gap: 1px; text-align: left; }
+    .model-button-label { color: var(--muted); font-size: 9px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+    .model-button-name { max-width: 190px; overflow: hidden; color: var(--text); font-size: 12px; text-overflow: ellipsis; }
+    .selector-chevron { margin-left: auto; color: var(--muted); font-size: 13px; }
 
     .details-popover {
       position: absolute;
-      z-index: 8;
+      z-index: 100;
       top: calc(100% + 8px);
       right: 0;
       width: min(390px, calc(100vw - 36px));
@@ -425,6 +403,8 @@ HTML = r"""
     .detail-grid dd { margin: 0; color: var(--muted-strong); word-break: break-word; text-align: right; }
 
     .chat-panel {
+      position: relative;
+      z-index: 1;
       min-height: 0;
       overflow: hidden;
       display: grid;
@@ -433,7 +413,6 @@ HTML = r"""
       border-radius: var(--radius);
       background: var(--surface);
       box-shadow: var(--shadow);
-      backdrop-filter: blur(20px);
     }
 
     #chatlog {
@@ -508,7 +487,7 @@ HTML = r"""
       font-size: 11px;
       animation: fade-up .2s ease-out;
     }
-    .notice.error { background: color-mix(in srgb, var(--bad) 10%, transparent); color: var(--bad); }
+    .notice.error { background: #2b171b; color: var(--bad); }
 
     .typing-bubble { display: flex; align-items: center; gap: 10px; min-width: 116px; }
     .typing-dots { display: inline-flex; align-items: center; gap: 4px; height: 20px; }
@@ -517,7 +496,7 @@ HTML = r"""
     .typing-dots i:nth-child(3) { animation-delay: .28s; }
     .thinking-text { color: var(--muted); font-size: 12px; }
 
-    .composer-wrap { padding: 12px; border-top: 1px solid var(--border); background: color-mix(in srgb, var(--surface-solid) 88%, transparent); }
+    .composer-wrap { padding: 12px; border-top: 1px solid var(--border); background: var(--surface-solid); }
     .composer {
       display: flex;
       align-items: flex-end;
@@ -528,7 +507,7 @@ HTML = r"""
       background: var(--bg);
       transition: border-color .18s ease, box-shadow .18s ease;
     }
-    .composer:focus-within { border-color: color-mix(in srgb, var(--accent) 55%, transparent); box-shadow: 0 0 0 4px var(--accent-soft); }
+    .composer:focus-within { border-color: var(--accent-strong); box-shadow: 0 0 0 4px var(--accent-soft); }
     textarea {
       width: 100%;
       min-height: 38px;
@@ -573,7 +552,6 @@ HTML = r"""
       place-items: center;
       padding: 20px;
       background: rgba(2, 5, 10, .64);
-      backdrop-filter: blur(8px);
       animation: fade-in .16s ease-out;
     }
     .modal-backdrop[hidden] { display: none; }
@@ -596,23 +574,31 @@ HTML = r"""
     .search-wrap { padding: 0 20px 14px; }
     .search-wrap input { width: 100%; height: 42px; padding: 0 14px; border: 1px solid var(--border); border-radius: 12px; background: var(--bg); color: var(--text); font-size: 13px; }
     .model-list { min-height: 180px; overflow-y: auto; padding: 0 12px 12px; }
-    .model-item { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 11px 10px; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--muted-strong); font: 12px ui-monospace, SFMono-Regular, Consolas, monospace; text-align: left; cursor: pointer; }
-    .model-item:last-child { border-bottom: 0; }
-    .model-item:hover { border-color: var(--border); background: var(--surface-raised); }
-    .model-item.active { color: var(--accent); }
+    .model-item { width: 100%; min-height: 52px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 9px 11px; border: 1px solid transparent; border-bottom-color: var(--border); border-radius: 10px; background: transparent; color: var(--muted-strong); text-align: left; cursor: pointer; transition: background .15s ease, border-color .15s ease; }
+    .model-item:last-child { border-bottom-color: transparent; }
+    .model-item:last-child.active { border-bottom-color: #2a655e; }
+    .model-item:hover { border-color: var(--border-strong); background: var(--surface-raised); }
+    .model-item.active { border-color: #2a655e; background: var(--accent-soft); color: var(--accent); }
     .model-item:disabled { opacity: .55; cursor: wait; }
-    .active-tag { padding: 3px 7px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); font: 700 9px Inter, sans-serif; text-transform: uppercase; letter-spacing: .04em; }
+    .model-radio { width: 17px; height: 17px; display: grid; place-items: center; border: 1px solid var(--border-strong); border-radius: 50%; }
+    .model-radio::after { width: 7px; height: 7px; border-radius: 50%; background: transparent; content: ""; }
+    .model-item.active .model-radio { border-color: var(--accent); }
+    .model-item.active .model-radio::after { background: var(--accent); }
+    .model-name { min-width: 0; overflow: hidden; font: 12px ui-monospace, SFMono-Regular, Consolas, monospace; text-overflow: ellipsis; white-space: nowrap; }
+    .model-state { color: var(--muted); font: 700 9px Inter, sans-serif; letter-spacing: .05em; text-transform: uppercase; }
+    .model-item:hover .model-state { color: var(--accent); }
+    .model-item.active .model-state { color: var(--accent); }
     .model-empty { display: grid; place-items: center; min-height: 180px; padding: 28px; color: var(--muted); text-align: center; font-size: 13px; }
-    .skeleton { height: 42px; margin: 6px 8px; border-radius: 10px; background: linear-gradient(90deg, var(--surface-raised) 25%, var(--surface-hover) 50%, var(--surface-raised) 75%); background-size: 200% 100%; animation: shimmer 1.25s infinite linear; }
+    .skeleton { height: 42px; margin: 6px 8px; border-radius: 10px; background: var(--surface-raised); animation: pulse 1.1s infinite ease-in-out; }
     .modal-foot { padding: 12px 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 10px; }
 
     .toast-region { position: fixed; z-index: 50; right: 18px; bottom: 18px; display: grid; gap: 8px; pointer-events: none; }
     .toast { max-width: min(380px, calc(100vw - 36px)); padding: 11px 14px; border: 1px solid var(--border-strong); border-radius: 13px; background: var(--surface-solid); color: var(--muted-strong); box-shadow: var(--shadow); font-size: 12px; animation: toast-in .25s ease-out; }
-    .toast.good { border-color: color-mix(in srgb, var(--good) 35%, transparent); }
-    .toast.error { border-color: color-mix(in srgb, var(--bad) 42%, transparent); color: var(--bad); }
+    .toast.good { border-color: #347855; }
+    .toast.error { border-color: #7c3c44; color: var(--bad); }
 
     @keyframes typing { 0%, 60%, 100% { transform: translateY(0); opacity: .35; } 30% { transform: translateY(-4px); opacity: 1; } }
-    @keyframes shimmer { to { background-position: -200% 0; } }
+    @keyframes pulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
     @keyframes fade-in { from { opacity: 0; } }
     @keyframes fade-up { from { opacity: 0; transform: translateY(7px); } }
     @keyframes pop-in { from { opacity: 0; transform: scale(.97) translateY(-4px); } }
@@ -621,11 +607,13 @@ HTML = r"""
 
     @media (max-width: 680px) {
       .app-shell { padding-left: 10px; padding-right: 10px; gap: 9px; }
-      .brand p, .status-text, .model-summary { display: none; }
+      .brand p, .status-text { display: none; }
       .status-pill { width: 38px; padding: 0; justify-content: center; }
       .action-label { display: none; }
       .action-btn { width: 38px; padding: 0; justify-content: center; }
-      .count-badge { position: absolute; transform: translate(12px, -12px); box-shadow: 0 0 0 2px var(--surface-solid); }
+      .model-selector-btn { width: auto; min-width: 0; max-width: 48vw; padding: 5px 9px; }
+      .model-button-label, .count-badge { display: none; }
+      .model-button-name { max-width: 105px; }
       .toolbar { padding: 7px; }
       #chatlog { padding: 20px 12px 12px; }
       .message-stack, .message-row.assistant .message-stack { max-width: 90%; }
@@ -655,7 +643,6 @@ HTML = r"""
           <span class="status-dot"></span>
           <span class="status-text">Connecting</span>
         </button>
-        <button class="icon-btn" id="themeBtn" type="button" onclick="toggleTheme()" aria-label="Switch colour theme" title="Switch colour theme">◐</button>
       </div>
     </header>
 
@@ -664,14 +651,19 @@ HTML = r"""
         <button class="action-btn" id="testBtn" type="button" onclick="testKey()" title="Test API key">
           <span class="action-symbol" aria-hidden="true">✓</span><span class="action-label">Test key</span>
         </button>
-        <button class="action-btn" id="modelsBtn" type="button" onclick="openModels()" title="Browse available models">
-          <span class="action-symbol" aria-hidden="true">⌘</span><span class="action-label">Models</span><span class="count-badge" id="modelCount">—</span>
+        <button class="action-btn model-selector-btn" id="modelsBtn" type="button" onclick="openModels()" title="Choose the model Jarvis uses">
+          <span class="action-symbol" aria-hidden="true">◎</span>
+          <span class="model-button-copy">
+            <span class="model-button-label">Model</span>
+            <strong class="model-button-name" id="modelButtonName">Loading…</strong>
+          </span>
+          <span class="count-badge" id="modelCount">—</span>
+          <span class="selector-chevron" aria-hidden="true">⌄</span>
         </button>
         <button class="action-btn" type="button" onclick="clearChat()" title="Clear conversation">
           <span class="action-symbol" aria-hidden="true">×</span><span class="action-label">Clear</span>
         </button>
       </div>
-      <div class="model-summary" id="modelSummary">Checking configuration…</div>
       <button class="icon-btn" type="button" onclick="toggleDetails(event)" aria-label="Show connection details" title="Connection details">⋯</button>
 
       <aside class="details-popover" id="detailsPopover" hidden>
@@ -716,8 +708,8 @@ HTML = r"""
     <section class="model-modal" role="dialog" aria-modal="true" aria-labelledby="modelsTitle">
       <div class="modal-head">
         <div>
-          <h2 id="modelsTitle">Available models</h2>
-          <p>Choose which model Jarvis will use for new messages.</p>
+          <h2 id="modelsTitle">Choose a model</h2>
+          <p>Currently using <strong id="modalActiveModel">Loading…</strong></p>
         </div>
         <button class="icon-btn modal-close" type="button" onclick="closeModels()" aria-label="Close models">×</button>
       </div>
@@ -725,7 +717,7 @@ HTML = r"""
         <input id="modelSearch" type="search" placeholder="Filter models…" aria-label="Filter models" oninput="renderModels()" />
       </div>
       <div class="model-list" id="modelList"></div>
-      <div class="modal-foot">Your selection is saved by Jarvis and persists across restarts.</div>
+      <div class="modal-foot">Select any model in the list to switch immediately. Your choice is saved across restarts.</div>
     </section>
   </div>
 
@@ -843,27 +835,33 @@ function setStatus(text, cls) {
   el.title = text + " · click to refresh";
 }
 
+function updateActiveModelUi() {
+  const displayName = activeModel || "Choose a model";
+  document.getElementById("modelButtonName").textContent = displayName;
+  document.getElementById("modalActiveModel").textContent = displayName;
+  document.getElementById("detailModel").textContent = displayName;
+  document.getElementById("modelsBtn").title = "Current model: " + displayName + " · click to change";
+}
+
 async function refreshStatus(showConfirmation = false) {
   setStatus("Checking", "");
   try {
     const response = await fetch(apiPath("status"));
     const data = await response.json();
     activeModel = data.model || "Not configured";
+    updateActiveModelUi();
 
     if (!data.enabled) setStatus("Disabled", "warn");
     else if (!data.has_openai_api_key) setStatus("Key needed", "warn");
     else setStatus("Online", "ok");
 
-    document.getElementById("modelSummary").innerHTML = "Using <strong></strong>";
-    document.getElementById("modelSummary").querySelector("strong").textContent = activeModel;
     document.getElementById("detailEnabled").textContent = data.enabled ? "Enabled" : "Disabled";
     document.getElementById("detailKey").textContent = data.has_openai_api_key ? "Configured" : "Missing";
-    document.getElementById("detailModel").textContent = activeModel;
     document.getElementById("detailProgram").textContent = data.program_file;
     if (showConfirmation) toast("Status refreshed", "good");
   } catch (error) {
     setStatus("Offline", "bad");
-    document.getElementById("modelSummary").textContent = "Unable to reach Jarvis";
+    document.getElementById("modelButtonName").textContent = "Unavailable";
     if (showConfirmation) toast("Jarvis is currently unreachable", "error");
   }
 }
@@ -925,6 +923,7 @@ async function fetchModels() {
     if (!data.ok) throw new Error(data.error || "Could not fetch models.");
     availableModels = data.models || [];
     activeModel = data.selected_model || activeModel;
+    updateActiveModelUi();
     document.getElementById("modelCount").textContent = availableModels.length;
     renderModels();
     document.getElementById("modelSearch").focus();
@@ -959,15 +958,16 @@ function renderModels() {
     row.className = "model-item" + (model === activeModel ? " active" : "");
     row.disabled = isSelectingModel;
     row.setAttribute("aria-label", model === activeModel ? model + ", currently active" : "Use " + model);
+    const radio = document.createElement("span");
+    radio.className = "model-radio";
+    radio.setAttribute("aria-hidden", "true");
     const name = document.createElement("span");
+    name.className = "model-name";
     name.textContent = model;
-    row.appendChild(name);
-    if (model === activeModel) {
-      const tag = document.createElement("span");
-      tag.className = "active-tag";
-      tag.textContent = "Active";
-      row.appendChild(tag);
-    }
+    const state = document.createElement("span");
+    state.className = "model-state";
+    state.textContent = model === activeModel ? "Active" : "Select";
+    row.append(radio, name, state);
     row.addEventListener("click", () => selectModel(model));
     fragment.appendChild(row);
   });
@@ -993,9 +993,7 @@ async function selectModel(model) {
     if (!data.ok) throw new Error(data.error || "Could not change models.");
 
     activeModel = data.model;
-    document.getElementById("modelSummary").innerHTML = "Using <strong></strong>";
-    document.getElementById("modelSummary").querySelector("strong").textContent = activeModel;
-    document.getElementById("detailModel").textContent = activeModel;
+    updateActiveModelUi();
     if (historyItems.length) addNotice("Now using " + activeModel + ".");
     toast("Model switched to " + activeModel, "good");
     closeModels();
@@ -1108,20 +1106,6 @@ function toggleDetails(event) {
   popover.hidden = !popover.hidden;
 }
 
-function toggleTheme() {
-  const isLight = document.documentElement.dataset.theme === "light";
-  const next = isLight ? "dark" : "light";
-  document.documentElement.dataset.theme = next;
-  try { localStorage.setItem("jarvis-theme", next); } catch (error) { /* storage may be unavailable */ }
-  document.querySelector('meta[name="theme-color"]').content = next === "light" ? "#eef1f5" : "#090b0f";
-}
-
-function loadTheme() {
-  let saved = "";
-  try { saved = localStorage.getItem("jarvis-theme") || ""; } catch (error) { /* storage may be unavailable */ }
-  if (saved === "light") document.documentElement.dataset.theme = "light";
-}
-
 input.addEventListener("input", autoSizeInput);
 input.addEventListener("keydown", event => {
   if (event.key === "Enter" && !event.shiftKey) {
@@ -1142,7 +1126,6 @@ document.addEventListener("keydown", event => {
   }
 });
 
-loadTheme();
 autoSizeInput();
 refreshStatus();
 </script>
@@ -1154,4 +1137,3 @@ refreshStatus();
 @app.get("/", response_class=HTMLResponse)
 def index() -> str:
     return HTML
-
