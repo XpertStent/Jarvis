@@ -5,12 +5,12 @@ configuration:
   openai_api_key:
     name: OpenAI API key
     description: API key from the OpenAI platform. This is not your ChatGPT login password.
-  model:
-    name: Model
-    description: OpenAI model ID to use. Use the Fetch Models button in the Jarvis UI to check models your key can access.
   create_persistent_notification_on_online:
     name: Create persistent notification when online
     description: Creates or updates a Home Assistant persistent notification when Jarvis starts.
   system_prompt:
     name: System prompt
     description: Main behaviour instruction given to Jarvis before each reply.
+  reset_main_to_default_on_start:
+    name: Reset editable program on next start
+    description: Backs up /config/jarvis/main.py, installs the add-on's current default, and then turns itself off.
