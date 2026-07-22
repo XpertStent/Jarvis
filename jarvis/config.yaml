@@ -1,5 +1,5 @@
 name: "Jarvis"
-version: "1.0.0"
+version: "1.1.0"
 slug: "jarvis"
 description: "Python-based AI chatbot side panel for Home Assistant. Editable file placed in /config/jarvis/main.py"
 url: "https://developers.home-assistant.io/docs/apps/configuration/"
@@ -22,6 +22,9 @@ panel_admin: true
 # Allows the add-on to call Home Assistant Core through http://supervisor/core/api
 homeassistant_api: true
 
+# Allows Jarvis to remove settings retired by newer versions from its own options.
+hassio_api: true
+
 # Mount the main Home Assistant /config folder inside this container as /config.
 # The editable Jarvis program will be placed in /config/jarvis/main.py on first start.
 map:
@@ -32,16 +35,13 @@ map:
 options:
   enabled: true
   openai_api_key: ""
-  model: "gpt-5.6-luna"
   create_persistent_notification_on_online: true
   system_prompt: "You are Jarvis, a concise Home Assistant chatbot. Help the user clearly and safely. In v1, do not claim to control devices unless code for that is added later."
-  reset_main.py_to_default_on_start: false
+  reset_main_to_default_on_start: false
 
 schema:
   enabled: bool
   openai_api_key: password
-  model: str
   create_persistent_notification_on_online: bool
   system_prompt: str
-  reset_main.py_to_default_on_start: bool
-
+  reset_main_to_default_on_start: bool
