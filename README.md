@@ -10,17 +10,17 @@ Important paths:
 
 The add-on copies `default_main.py` to `/config/jarvis/main.py` only if that file does not already exist. After that, your editable file is preserved.
 
-## Install
+## Edit the App
+main.py is placed at /config/jarvis/main.py and can be edited and customised according to requirement.
 
-1. Copy this folder to your Home Assistant machine.
-2. Run `bash install.sh`, or manually copy the `jarvis` folder to `/addons/local/jarvis`.
-3. In Home Assistant, open Settings > Add-ons > Add-on Store.
-4. Use the three-dot menu and choose Check for updates.
-5. Install Jarvis.
-6. Add your OpenAI API key and model in the Configuration tab.
-7. Start the add-on.
-8. Open Jarvis from the sidebar.
+## Model selection
+
+The model is selected from the **Models** browser in the Jarvis chat, not from the Home Assistant add-on Configuration tab. The selection is stored in the add-on data folder and survives page and add-on restarts.
+
+The fallback used before a model is selected is the `DEFAULT_MODEL` constant in `default_main.py`.
+
+For an existing installation, enable **Reset editable program on next start** once and restart the add-on to install the updated UI. Jarvis backs up the existing `/config/jarvis/main.py` before replacing it and automatically turns the reset option off again.
 
 ## V1 scope
 
-This version chats only. Entity control can be added later by expanding `/config/jarvis/main.py` to call Home Assistant services through `http://supervisor/core/api/services/<domain>/<service>`.
+This version chats only. Entity control can be added later by editing `/config/jarvis/main.py` to call Home Assistant services through `http://supervisor/core/api/services/<domain>/<service>`.
