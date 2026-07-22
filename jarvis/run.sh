@@ -65,6 +65,81 @@ mkdir -p "${APP_DIR}"
 log_fun "Booting up. Polishing the arc reactor..."
 log_info "Editable program folder: ${APP_DIR}"
 
+OPTIONS_MIGRATION="$(python3 - <<'PY'
+import json
+import os
+import urllib.request
+
+path = "/data/options.json"
+
+try:
+    with open(path, "r", encoding="utf-8") as file:
+        options = json.load(file)
+except Exception as exc:
+    print(f"warning:could not read options: {exc}")
+    raise SystemExit(0)
+
+changed = False
+
+if "model" in options:
+    options.pop("model", None)
+    changed = True
+
+legacy_reset = options.pop("reset_main.py_to_default_on_start", None)
+if legacy_reset is not None:
+    if legacy_reset is True:
+        options["reset_main_to_default_on_start"] = True
+    changed = True
+
+if not changed:
+    print("none")
+    raise SystemExit(0)
+
+token = os.environ.get("SUPERVISOR_TOKEN", "")
+if token:
+    try:
+        request = urllib.request.Request(
+            "http://supervisor/addons/self/options",
+            data=json.dumps({"options": options}).encode("utf-8"),
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json",
+            },
+            method="POST",
+        )
+        with urllib.request.urlopen(request, timeout=10) as response:
+            if response.status < 300:
+                print("updated")
+                raise SystemExit(0)
+    except SystemExit:
+        raise
+    except Exception:
+        pass
+
+try:
+    temporary_path = path + ".tmp"
+    with open(temporary_path, "w", encoding="utf-8") as file:
+        json.dump(options, file, indent=2)
+        file.write("\n")
+    os.replace(temporary_path, path)
+    print("updated-locally")
+except Exception as exc:
+    print(f"warning:could not remove legacy options: {exc}")
+PY
+)"
+
+case "${OPTIONS_MIGRATION}" in
+  updated)
+    log_ok "Removed retired configuration options"
+    ;;
+  updated-locally)
+    log_warn "Removed retired options locally; Supervisor API was unavailable"
+    ;;
+  warning:*)
+    log_warn "${OPTIONS_MIGRATION#warning:}"
+    ;;
+esac
+
 
 
 RESET_MAIN="$(python3 - <<'PY'
