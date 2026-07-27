@@ -1,3 +1,4 @@
+import asyncio
 import json
 import os
 from contextlib import asynccontextmanager
@@ -7,7 +8,7 @@ from typing import Any
 
 import httpx
 from fastapi import FastAPI
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from openai import AsyncOpenAI
 from pydantic import BaseModel
 
@@ -202,37 +203,124 @@ async def select_model(payload: ModelRequest) -> JSONResponse:
 
 
 @app.post("/api/chat")
-async def chat(payload: ChatRequest) -> JSONResponse:
+async def chat(payload: ChatRequest):
     options = load_options()
+
     if not options.get("enabled", True):
-        return JSONResponse({"ok": False, "error": "Jarvis is disabled in add-on options."}, status_code=403)
+        return JSONResponse(
+            {"ok": False, "error": "Jarvis is disabled in add-on options."},
+            status_code=403,
+        )
 
     user_message = payload.message.strip()
+
     if not user_message:
-        return JSONResponse({"ok": False, "error": "Message is blank."}, status_code=400)
+        return JSONResponse(
+            {"ok": False, "error": "Message is blank."},
+            status_code=400,
+        )
 
     try:
         client = get_openai_client(options)
-        model = get_selected_model()
-        system_prompt = str(options.get("system_prompt") or DEFAULT_OPTIONS["system_prompt"]).strip()
-
-        input_items: list[dict[str, str]] = []
-        for item in (payload.history or [])[-10:]:
-            role = item.get("role", "user")
-            content = item.get("content", "")
-            if role in {"user", "assistant"} and content:
-                input_items.append({"role": role, "content": content})
-        input_items.append({"role": "user", "content": user_message})
-
-        response = await client.responses.create(
-            model=model,
-            instructions=system_prompt,
-            input=input_items,
-        )
-        answer = response.output_text or "Jarvis did not return text."
-        return JSONResponse({"ok": True, "answer": answer, "model": model})
     except Exception as exc:
-        return JSONResponse({"ok": False, "error": str(exc)}, status_code=500)
+        return JSONResponse(
+            {"ok": False, "error": str(exc)},
+            status_code=500,
+        )
+
+    model = get_selected_model()
+    system_prompt = str(
+        options.get("system_prompt") or DEFAULT_OPTIONS["system_prompt"]
+    ).strip()
+
+    input_items: list[dict[str, str]] = []
+
+    for item in (payload.history or [])[-10:]:
+        role = item.get("role", "user")
+        content = item.get("content", "")
+
+        if role in {"user", "assistant"} and content:
+            input_items.append(
+                {
+                    "role": role,
+                    "content": content,
+                }
+            )
+
+    input_items.append(
+        {
+            "role": "user",
+            "content": user_message,
+        }
+    )
+
+    def sse_packet(packet: dict[str, Any]) -> str:
+        return f"data: {json.dumps(packet, ensure_ascii=False)}\n\n"
+
+    async def stream_answer():
+        try:
+            yield sse_packet({"type": "start"})
+
+            stream = await client.responses.create(
+                model=model,
+                instructions=system_prompt,
+                input=input_items,
+                stream=True,
+            )
+
+            async for event in stream:
+                event_type = getattr(event, "type", "")
+
+                if event_type == "response.output_text.delta":
+                    delta = getattr(event, "delta", "")
+
+                    if delta:
+                        # Split chunks slightly so the UI visibly types out,
+                        # even if OpenAI or the HA ingress proxy sends larger chunks.
+                        chunk_size = 8
+
+                        for index in range(0, len(delta), chunk_size):
+                            small_chunk = delta[index:index + chunk_size]
+
+                            yield sse_packet(
+                                {
+                                    "type": "delta",
+                                    "text": small_chunk,
+                                }
+                            )
+
+                            await asyncio.sleep(0.01)
+
+                elif event_type == "error":
+                    message = getattr(event, "message", "Unknown streaming error")
+
+                    yield sse_packet(
+                        {
+                            "type": "error",
+                            "text": f"Jarvis stream error: {message}",
+                        }
+                    )
+
+            yield sse_packet({"type": "done"})
+
+        except Exception as exc:
+            yield sse_packet(
+                {
+                    "type": "error",
+                    "text": f"Jarvis error: {exc}",
+                }
+            )
+
+    return StreamingResponse(
+        stream_answer(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache, no-transform",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+            "X-Jarvis-Model": model,
+        },
+    )
 
 
 HTML = r"""
@@ -736,7 +824,14 @@ const input = document.getElementById("message");
 const sendButton = document.getElementById("sendBtn");
 
 function apiPath(path) {
-  return "api/" + path;
+  const cleanPath = String(path || "").replace(/^\/+/, "");
+  let basePath = window.location.pathname;
+
+  if (!basePath.endsWith("/")) {
+    basePath += "/";
+  }
+
+  return basePath + "api/" + cleanPath;
 }
 
 function timeLabel() {
@@ -1028,18 +1123,71 @@ function handleSendButton() {
     sendMessage();
   }
 }
-
 async function sendMessage() {
   const text = input.value.trim();
   if (!text || isSending) return;
 
   const previousHistory = historyItems.slice(-10);
+
   input.value = "";
   autoSizeInput();
+
   addMsg("user", text);
   showTyping();
   setSendingState(true);
+
   chatController = new AbortController();
+
+  let assistantRow = null;
+  let assistantBubble = null;
+  let answer = "";
+
+  function ensureAssistantBubble() {
+    if (!assistantBubble) {
+      removeTyping();
+      assistantRow = addMsg("assistant", "");
+      assistantBubble = assistantRow.querySelector(".message-bubble");
+    }
+  }
+
+  function processSseBlock(eventBlock) {
+    const dataLine = eventBlock
+      .split("\n")
+      .find(line => line.startsWith("data: "));
+
+    if (!dataLine) {
+      return;
+    }
+
+    let packet;
+
+    try {
+      packet = JSON.parse(dataLine.slice(6));
+    } catch {
+      return;
+    }
+
+    if (packet.type === "start") {
+      return;
+    }
+
+    if (packet.type === "delta") {
+      ensureAssistantBubble();
+
+      answer += packet.text || "";
+      assistantBubble.textContent = answer;
+      scrollChat();
+      return;
+    }
+
+    if (packet.type === "error") {
+      throw new Error(packet.text || "Streaming failed.");
+    }
+
+    if (packet.type === "done") {
+      return;
+    }
+  }
 
   try {
     const response = await fetch(apiPath("chat"), {
@@ -1048,23 +1196,91 @@ async function sendMessage() {
       body: JSON.stringify({ message: text, history: previousHistory }),
       signal: chatController.signal
     });
-    const data = await response.json();
-    if (!data.ok) throw new Error(data.error || "Jarvis could not answer.");
-    removeTyping();
-    addMsg("assistant", data.answer);
-    historyItems.push({ role: "user", content: text });
-    historyItems.push({ role: "assistant", content: data.answer });
-    if (data.model && data.model !== activeModel) {
-      activeModel = data.model;
-      document.getElementById("detailModel").textContent = activeModel;
+
+    if (!response.ok) {
+      let errorMessage = "Jarvis could not answer.";
+
+      try {
+        const data = await response.json();
+        errorMessage = data.error || errorMessage;
+      } catch {
+        try {
+          errorMessage = await response.text();
+        } catch {
+          // Keep fallback error message.
+        }
+      }
+
+      throw new Error(errorMessage);
     }
+
+    if (!response.body) {
+      throw new Error("Streaming is not supported by this browser view.");
+    }
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+    let sseBuffer = "";
+
+    while (true) {
+      const result = await reader.read();
+
+      if (result.done) {
+        break;
+      }
+
+      sseBuffer += decoder.decode(result.value, { stream: true });
+
+      const eventBlocks = sseBuffer.split("\n\n");
+      sseBuffer = eventBlocks.pop() || "";
+
+      for (const eventBlock of eventBlocks) {
+        processSseBlock(eventBlock);
+      }
+    }
+
+    const finalChunk = decoder.decode();
+
+    if (finalChunk) {
+      sseBuffer += finalChunk;
+    }
+
+    if (sseBuffer.trim()) {
+      processSseBlock(sseBuffer);
+    }
+
+    removeTyping();
+
+    if (!answer.trim()) {
+      answer = "Jarvis did not return text.";
+      ensureAssistantBubble();
+      assistantBubble.textContent = answer;
+    }
+
+    historyItems.push({ role: "user", content: text });
+    historyItems.push({ role: "assistant", content: answer });
+
+    const streamedModel = response.headers.get("X-Jarvis-Model");
+
+    if (streamedModel && streamedModel !== activeModel) {
+      activeModel = streamedModel;
+      updateActiveModelUi();
+    }
+
   } catch (error) {
     removeTyping();
+
     if (error.name === "AbortError") {
+      if (answer.trim()) {
+        historyItems.push({ role: "user", content: text });
+        historyItems.push({ role: "assistant", content: answer });
+      }
+
       addNotice("Response stopped.");
     } else {
       addNotice("Something went wrong: " + error.message, true);
     }
+
   } finally {
     chatController = null;
     setSendingState(false);
