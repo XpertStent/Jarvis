@@ -5,6 +5,9 @@ configuration:
   openai_api_key:
     name: OpenAI API key
     description: API key from the OpenAI platform. This is not your ChatGPT login password.
+  show_in_sidebar_for_non_admin_users:
+    name: Show in sidebar for non-admin users
+    description: Allow non-admin Home Assistant users to access Jarvis from the sidebar.
   create_persistent_notification_on_online:
     name: Create persistent notification when online
     description: Creates or updates a Home Assistant persistent notification when Jarvis starts.
