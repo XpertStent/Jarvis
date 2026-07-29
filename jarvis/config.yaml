@@ -17,7 +17,7 @@ ingress_port: 8099
 ingress_stream: true
 panel_icon: mdi:robot
 panel_title: Jarvis
-panel_admin: true
+panel_admin: false
 
 # Allows the add-on to call Home Assistant Core through http://supervisor/core/api
 homeassistant_api: true
