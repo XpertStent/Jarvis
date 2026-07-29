@@ -36,6 +36,8 @@ LEGACY_MAIN_FILE="${APP_DIR}/main.py"
 DEFAULT_BACKEND_FILE="/opt/jarvis/default_backend.py"
 DEFAULT_FRONTEND_FILE="/opt/jarvis/default_frontend.html"
 
+SHOW_FOR_NON_ADMINS="$(bashio::config 'show_in_sidebar_for_non_admin_users')"
+
 log_fun "Booting up. Polishing the arc reactor..."
 log_info "Editable program folder: ${APP_DIR}"
 
