@@ -35,6 +35,7 @@ map:
 options:
   enabled: true
   openai_api_key: ""
+  show_in_sidebar_for_non_admin_users: true
   create_persistent_notification_on_online: true
   system_prompt: "You are Jarvis, a concise Home Assistant chatbot. Help the user clearly and safely. In v1, do not claim to control devices unless code for that is added later."
   reset_main_to_default_on_start: false
@@ -42,6 +43,7 @@ options:
 schema:
   enabled: bool
   openai_api_key: password
+  show_in_sidebar_for_non_admin_users: bool
   create_persistent_notification_on_online: bool
   system_prompt: str
   reset_main_to_default_on_start: bool
